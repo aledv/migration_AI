@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Code - Data Migration Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 1rem;
+        }
+        .file-list {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            padding: 1rem;
+        }
+        .file-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+        .file-item:hover {
+            background-color: #f8f9fa;
+        }
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e5e5;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="row">
+                <div class="col-md-8">
+                    <h1>Generated Code</h1>
+                    <p class="lead">List of generated migration files</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/" class="btn btn-outline-secondary">Home</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="file-list">
+                        {% if files %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Filename</th>
+                                            <th>Source Table</th>
+                                            <th>Target Table</th>
+                                            <th>Creation Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for file in files %}
+                                        <tr class="file-item">
+                                                <td>{{ file.filename }}</td>
+                                                <td>{{ file.source_table }}</td>
+                                                <td>{{ file.target_table }}</td>
+                                                <td>{{ file.date }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary download-btn" data-filename="{{ file.filename }}">Download</button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <p class="mb-0">No files generated yet.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="footer text-center">
+                <p>Data Migration Tool — Created for the datamigration team</p>
+            </div>
+        </div>
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Handle download
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.download-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const filename = this.getAttribute('data-filename');
+                        
+                        fetch(`/download/${filename}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                // Create a blob element with the code
+                                const blob = new Blob([data.code], { type: 'text/plain' });
+                                const url = window.URL.createObjectURL(blob);
+                                
+                                // Create a download link and automatically click it
+                                const a = document.createElement('a');
+                                a.style.display = 'none';
+                                a.href = url;
+                                a.download = data.filename;
+                                document.body.appendChild(a);
+                                a.click();
+                                
+                                // Clean up
+                                window.URL.revokeObjectURL(url);
+                                document.body.removeChild(a);
+                            })
+                            .catch(error => {
+                                console.error('Error during download:', error);
+                                alert('An error occurred while downloading the file.');
+                            });
+                    });
+                });
+            });
+        </script>
+    </body>
+    </html>

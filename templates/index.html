@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Migration Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 1rem;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 5px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #adb5bd;
+            background-color: #f8f9fa;
+        }
+        .features {
+            margin-top: 3rem;
+        }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e5e5;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="row">
+                <div class="col-md-8">
+                    <h1>Data Migration Tool</h1>
+                    <p class="lead">Automatically generate data migration code using AI</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/list_generated" class="btn btn-outline-secondary">Generated Code</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <div class="upload-area" id="drop-area">
+                        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+                            <h4>Upload Mapping File</h4>
+                            <p>Support for CSV, JSON, Excel files</p>
+                            <input type="file" id="fileInput" name="file" class="form-control mb-3">
+                            <button type="submit" class="btn btn-primary">Generate Migration Code</button>
+                        </form>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5>Mapping File Format</h5>
+                        <p>The file should contain the following columns:</p>
+                        <ul>
+                            <li><strong>source_table</strong>: Source table name</li>
+                            <li><strong>target_table</strong>: Target table name</li>
+                            <li><strong>source_columns</strong> (optional): Source table columns</li>
+                            <li><strong>target_columns</strong> (optional): Target table columns</li>
+                            <li><strong>transformations</strong> (optional): Transformation rules</li>
+                            <li><strong>where_condition</strong> (optional): WHERE condition to filter data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h3>Upload</h3>
+                        <p>Upload your mapping file in CSV, JSON, or Excel format.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>Generate</h3>
+                        <p>The integrated AI generates custom PL/SQL code for Oracle.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>Execute</h3>
+                        <p>Download and run the generated PL/SQL code to migrate your data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer text-center">
+            <p>Data Migration Tool — Created for the datamigration team</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Drag and drop handling for upload
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('fileInput');
+            const uploadForm = document.getElementById('upload-form');
+
+            // Prevent default behaviors for drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // Add visual effects during drag
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.classList.add('bg-light');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('bg-light');
+            }
+
+            // Handle file drop
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    // Show selected file name
+                    const fileLabel = document.createElement('p');
+                    fileLabel.textContent = `Selected file: ${files[0].name}`;
+                    fileLabel.className = 'mt-2';
+                    
+                    // Remove any previous messages
+                    const existingLabels = dropArea.querySelectorAll('p.mt-2');
+                    existingLabels.forEach(label => label.remove());
+                    
+                    dropArea.appendChild(fileLabel);
+                }
+            }
+
+            // Prevent default submit event listener if necessary
+            uploadForm.addEventListener('submit', function(e) {
+                // Don't prevent default behavior if not necessary
+                // e.preventDefault();
+                
+                // If you want to add validation:
+                if (!fileInput.files.length) {
+                    e.preventDefault();
+                    alert('Please select a file before continuing');
+                }
+            });
+            
+            // Update UI when a file is selected via input
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const fileLabel = document.createElement('p');
+                    fileLabel.textContent = `Selected file: ${this.files[0].name}`;
+                    fileLabel.className = 'mt-2';
+                    
+                    // Remove any previous messages
+                    const existingLabels = dropArea.querySelectorAll('p.mt-2');
+                    existingLabels.forEach(label => label.remove());
+                    
+                    dropArea.appendChild(fileLabel);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+source_table,target_table,source_columns,target_columns,transformations,where_condition,related_inserts
+CUSTOMERS_OLD,CUSTOMERS_NEW,"ID,NAME,EMAIL,REG_DATE,STATUS","ID,FULL_NAME,EMAIL,REGISTRATION_DATE,STATUS_CODE","NAME->FULL_NAME,REG_DATE->REGISTRATION_DATE,STATUS->STATUS_CODE (MAP: 'A'->1,'I'->0)","STATUS <> 'D'","KEY:migrt_key(ID):NAME"

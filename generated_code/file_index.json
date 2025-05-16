@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "20250516_171915_CUSTOMERS_OLD_to_CUSTOMERS_NEW.sql",
+    "source_table": "CUSTOMERS_OLD",
+    "target_table": "CUSTOMERS_NEW",
+    "timestamp": "20250516_171915"
+  },
+  {
+    "filename": "20250516_171915_migrate_all.sql",
+    "source_table": "ALL",
+    "target_table": "ALL",
+    "timestamp": "20250516_171915"
+  },
+  {
+    "filename": "20250516_192516_CUSTOMERS_OLD_to_CUSTOMERS_NEW.sql",
+    "source_table": "CUSTOMERS_OLD",
+    "target_table": "CUSTOMERS_NEW",
+    "timestamp": "20250516_192516"
+  },
+  {
+    "filename": "20250516_192516_migrate_all.sql",
+    "source_table": "ALL",
+    "target_table": "ALL",
+    "timestamp": "20250516_192516"
+  }
+]

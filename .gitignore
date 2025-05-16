@@ -1,0 +1,4 @@
+.DS_Store
+*.pyc
+generated_code/*.sql
+uploads/*

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Code - Data Migration Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/vs2015.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background-color: #f8f9fa;
+        }
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 1rem;
+        }
+        .code-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            margin-bottom: 2rem;
+        }
+        .mapping-table {
+            margin-top: 2rem;
+        }
+        pre {
+            border-radius: 5px;
+            padding: 1rem;
+            margin: 0;
+        }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e5e5;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="row">
+                <div class="col-md-8">
+                    <h1>Generated Code</h1>
+                    <p class="lead">Automatically generated data migration code</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/" class="btn btn-outline-secondary me-2">Home</a>
+                    <a href="/list_generated" class="btn btn-outline-secondary">Generated Code</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-success">
+                        <h4>Code successfully generated!</h4>
+                        <p>Filename: <strong>{{ filename }}</strong></p>
+                        <button class="btn btn-primary mt-2" id="download-btn">Download Code</button>
+                    </div>
+
+                    <div class="code-container">
+                        <pre><code class="language-sql">{{ code }}</code></pre>
+                    </div>
+
+                    <div class="mapping-table">
+                        <h3>Processed Mapping Data</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Source Table</th>
+                                        <th>Target Table</th>
+                                        <th>Other Information</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in mapping_data %}
+                                    <tr>
+                                        <td>{{ item.get('source_table', 'N/A') }}</td>
+                                        <td>{{ item.get('target_table', 'N/A') }}</td>
+                                        <td>
+                                            {% if item.get('source_columns') %}
+                                            <strong>Source columns:</strong> {{ item.get('source_columns') }}<br>
+                                            {% endif %}
+                                            {% if item.get('target_columns') %}
+                                            <strong>Target columns:</strong> {{ item.get('target_columns') }}<br>
+                                            {% endif %}
+                                            {% if item.get('transformations') %}
+                                            <strong>Transformations:</strong> {{ item.get('transformations') }}<br>
+                                            {% endif %}
+                                            {% if item.get('where_condition') %}
+                                            <strong>WHERE condition:</strong> {{ item.get('where_condition') }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer text-center">
+            <p>Data Migration Tool — Created for the datamigration team</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/sql.min.js"></script>
+    <script>
+        // Highlight code
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        });
+
+        // Handle download
+        document.getElementById('download-btn').addEventListener('click', function() {
+            const filename = "{{ filename }}";
+            
+            fetch(`/download/${filename}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Create a blob element with the code
+                    const blob = new Blob([data.code], { type: 'text/plain' });
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    // Create a download link and automatically click it
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = data.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Clean up
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    console.error('Error during download:', error);
+                    alert('An error occurred while downloading the file.');
+                });
+        });
+    </script>
+</body>
+</html>
