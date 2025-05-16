@@ -2,3 +2,4 @@
 *.pyc
 generated_code/*.sql
 uploads/*
+models/ggml-model-q4_0.bin
