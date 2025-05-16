@@ -1,92 +1,181 @@
-# Data Migration Tool per Oracle PL/SQL
+# Data Migration Tool for Oracle PL/SQL
 
-Applicazione Flask che genera automaticamente codice PL/SQL per la migrazione di dati in Oracle.
+Flask web application that automatically generates PL/SQL code for data migration in Oracle.
 
-## Descrizione
-Questa webapp consente al team di datamigration di caricare un file di mapping tra tabelle sorgenti e tabelle destinazione, e generare automaticamente il codice PL/SQL per Oracle necessario per eseguire la migrazione dei dati. L'applicazione è progettata per funzionare in un ambiente senza connessione internet, utilizzando un modello AI leggero integrato localmente.
+## Description
 
-## Requisiti
-- Python 3.7+
-- Flask
-- Pandas
-- llama-cpp-python (per l'integrazione del modello AI locale)
-- openpyxl (per supporto Excel)
-- Werkzeug
+This webapp allows the data migration team to upload a mapping file between source tables and target tables, and automatically generate the necessary Oracle PL/SQL code to perform the data migration. The application is designed to work in an offline environment, using a locally integrated lightweight AI model.
 
-## Struttura del progetto
+## Requirements
+
+-   Python 3.7+
+-   Flask
+-   Pandas
+-   llama-cpp-python (for local AI model integration)
+-   openpyxl (for Excel support)
+-   Werkzeug
+
+## Project Structure
+
 ```
 datamigration-tool/
-├── app.py                 # File principale dell'applicazione
-├── run.py                 # Script di avvio e configurazione
-├── templates/             # Template HTML
-│   ├── index.html         # Pagina principale
-│   ├── result.html        # Pagina del risultato della generazione
-│   └── list.html          # Elenco dei file di codice generati
-├── uploads/               # Cartella per i file caricati
-├── generated_code/        # Cartella per il codice PL/SQL generato
-└── models/                # Cartella per i modelli AI
-    └── ggml-model-q4_0.bin  # Modello AI locale
+├── app.py                 # Main application file
+├── run.py                 # Startup and configuration script
+├── templates/             # HTML Templates
+│   ├── index.html         # Main page
+│   ├── result.html        # Code generation result page
+│   └── list.html          # Generated code files list
+├── uploads/               # Folder for uploaded files
+├── generated_code/        # Folder for generated PL/SQL code
+└── models/                # Folder for AI models
+    └── ggml-model-q4_0.bin  # Local AI model
 ```
 
-## Installazione
-1. Clona il repository:
+## Installation
+
+1.  Clone the repository:
+
 ```
 git clone https://github.com/yourusername/datamigration-tool.git
 cd datamigration-tool
 ```
 
-2. Crea un ambiente virtuale e attivalo:
+2.  Create a virtual environment and activate it:
+
 ```
 python -m venv venv
-source venv/bin/activate  # su Windows: venv\Scripts\activate
+source venv/bin/activate  # on Windows: venv\Scripts\activate
 ```
 
-3. Installa le dipendenze:
+3.  Install dependencies:
+
 ```
 pip install -r requirements.txt
 ```
 
-4. Scarica il modello AI utilizzando lo script di avvio:
+4.  Download the AI model using the startup script:
+
 ```
 python run.py --download-model
 ```
 
-## Utilizzo
-1. Avvia l'applicazione:
+## Usage
+
+1.  Start the application:
+
 ```
 python run.py
 ```
 
-2. Apri il browser e naviga all'indirizzo `http://localhost:5000`
+2.  Open your browser and navigate to `http://localhost:5000`
+3.  Upload a mapping file in a supported format (CSV, JSON, or Excel)
+4.  The system will generate Oracle PL/SQL code that can be downloaded or viewed directly in the interface
 
-3. Carica un file di mapping nel formato supportato (CSV, JSON o Excel)
+## Mapping File Format
 
-4. Il sistema genererà il codice PL/SQL per Oracle che può essere scaricato o visualizzato direttamente nell'interfaccia
+The mapping file must be structured with the following columns:
 
-## Formato del file di mapping
-Il file di mapping deve contenere almeno le seguenti colonne:
-- `source_table`: Nome della tabella sorgente
-- `target_table`: Nome della tabella destinazione
+### Required Columns
 
-Colonne opzionali:
-- `source_columns`: Elenco delle colonne della tabella sorgente
-- `target_columns`: Elenco delle colonne della tabella destinazione
-- `transformations`: Regole di trasformazione dei dati
-- `where_condition`: Condizione WHERE per filtrare i dati sorgente
+-   `source_table`: The name of the source table from which to extract data
+-   `target_table`: The name of the destination table where data will be inserted
 
-### Esempio di file CSV:
+### Optional Columns
+
+-   `source_columns`: Comma-separated list of columns to select from the source table
+-   `target_columns`: Comma-separated list of columns in the target table (must align with source_columns)
+-   `transformations`: Rules for transforming data during migration (see below)
+-   `where_condition`: SQL WHERE clause to filter records from the source table
+-   `related_inserts`: Instructions for inserting data into related lookup tables
+
+### Example CSV File
+
+csv
+
 ```csv
-source_table,target_table,source_columns,target_columns,transformations,where_condition
-CUSTOMERS_OLD,CUSTOMERS_NEW,"ID,NAME,EMAIL,REG_DATE,STATUS","ID,FULL_NAME,EMAIL,REGISTRATION_DATE,STATUS_CODE","NAME->FULL_NAME,REG_DATE->REGISTRATION_DATE,STATUS->STATUS_CODE (MAP: 'A'->1,'I'->0)","STATUS <> 'D'"
-ORDERS_OLD,ORDERS_NEW,"ORDER_ID,CUST_ID,ORDER_DATE,TOTAL_AMOUNT,PAYMENT_METHOD","ID,CUSTOMER_ID,ORDER_DATE,AMOUNT,PAYMENT_TYPE","ORDER_ID->ID,CUST_ID->CUSTOMER_ID,TOTAL_AMOUNT->AMOUNT,PAYMENT_METHOD->PAYMENT_TYPE","TOTAL_AMOUNT > 0"
+source_table,target_table,source_columns,target_columns,transformations,where_condition,related_inserts
+CUSTOMERS_OLD,CUSTOMERS_NEW,"ID,NAME,EMAIL,REG_DATE,STATUS","ID,FULL_NAME,EMAIL,REGISTRATION_DATE,STATUS_CODE","NAME->FULL_NAME,REG_DATE->REGISTRATION_DATE,STATUS->STATUS_CODE (MAP: 'A'->1,'I'->0)","STATUS <> 'D'","KEY:migrt_key(ID):NAME"
+ORDERS_OLD,ORDERS_NEW,"ORDER_ID,CUST_ID,ORDER_DATE,TOTAL_AMOUNT,PAYMENT_METHOD","ID,CUSTOMER_ID,ORDER_DATE,AMOUNT,PAYMENT_TYPE","ORDER_ID->ID,CUST_ID->CUSTOMER_ID,TOTAL_AMOUNT->AMOUNT,PAYMENT_METHOD->PAYMENT_TYPE","TOTAL_AMOUNT > 0",""
 ```
 
-## Funzionamento dell'AI offline
-L'applicazione utilizza un modello AI leggero (basato su llama-cpp) che viene eseguito localmente senza bisogno di connessione internet. Il modello viene utilizzato per generare codice PL/SQL personalizzato in base alle specifiche di mapping.
+## Column Details
 
-Se il modello AI non è disponibile, l'applicazione utilizza un generatore di codice di fallback che produce uno script PL/SQL di base.
+### source_columns & target_columns
 
-## File requirements.txt
+These columns specify which fields to migrate and how they map between tables:
+
+-   Must be enclosed in double quotes
+-   Comma-separated list of column names
+-   The order of columns in source_columns must correspond to the order in target_columns
+
+Example:
+
+```
+"ID,NAME,EMAIL,REG_DATE,STATUS","ID,FULL_NAME,EMAIL,REGISTRATION_DATE,STATUS_CODE"
+```
+
+### transformations
+
+Specifies how source columns map to target columns and any value transformations:
+
+#### Simple Column Rename
+
+Format: `SOURCE_COLUMN->TARGET_COLUMN`
+
+Example: `NAME->FULL_NAME` means the NAME column from source will be mapped to FULL_NAME in target
+
+#### Value Mapping Transformation
+
+Format: `COLUMN->NEW_COLUMN (MAP: 'value1'->newvalue1,'value2'->newvalue2)`
+
+Example: `STATUS->STATUS_CODE (MAP: 'A'->1,'I'->0)` will transform:
+
+-   'A' values to 1
+-   'I' values to 0
+
+### where_condition
+
+Optional SQL condition to filter source records:
+
+-   Standard SQL WHERE clause syntax
+-   No need to include the "WHERE" keyword
+-   Must be enclosed in quotes if it contains commas
+
+Example: `STATUS <> 'D'` will only migrate records where STATUS is not 'D'
+
+### related_inserts
+
+Instructions for inserting data into related lookup tables:
+
+#### KEY Format
+
+Format: `KEY:table_name(key_column):value_column`
+
+Example: `KEY:migrt_key(ID):NAME` will:
+
+-   Insert/update records in the `migrt_key` table
+-   Using the source table's `ID` column as the key (migrt_key column)
+-   Using the source table's `NAME` column as the value (migrt_value column)
+
+## Generated Code Features
+
+The application generates PL/SQL packages with:
+
+-   One package per source-target table pair
+-   Bulk operations (BULK COLLECT, FORALL) for performance
+-   Error handling and logging
+-   Transaction management (COMMIT/ROLLBACK)
+-   Related table inserts with MERGE INTO statements
+-   Value transformations with CASE statements
+
+## Offline AI Functionality
+
+The application uses a lightweight AI model (based on llama-cpp) that runs locally without internet connection. The model is used to generate customized PL/SQL code based on mapping specifications.
+
+If the AI model is not available, the application uses a fallback code generator that produces a basic PL/SQL script.
+
+## Requirements.txt File
+
 ```
 flask==2.3.3
 pandas==2.1.0
